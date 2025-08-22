@@ -1,0 +1,156 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Mail, Sparkles, CheckCircle } from "lucide-react"
+
+export default function EmailSignup() {
+  const [email, setEmail] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+
+    setIsLoading(true)
+
+    try {
+      // Submit to Google Apps Script
+      const formData = new FormData()
+      formData.append("email", email)
+
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbz2P8VDtHde6n-FpZ1H6sIUtD7HHlzxiR0q_RqEBWE-p8K2o-ycIaTieAw33JzMAI4FnQ/exec",
+        {
+          method: "POST",
+          body: formData,
+          mode: "no-cors", // Required for Google Apps Script
+        },
+      )
+
+      setIsSubmitted(true)
+    } catch (error) {
+      console.error("Subscription error:", error)
+      // Still show success to user since no-cors mode doesn't return response
+      setIsSubmitted(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
+          <CardContent className="pt-8 pb-8 text-center">
+            <div className="mb-6">
+              <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-card-foreground mb-2">Thanks — checking your inbox now! 🎉</h2>
+              <p className="text-muted-foreground">
+                You've successfully joined our community! Check your inbox for updates.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setIsSubmitted(false)
+                setEmail("")
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Sign Up Another Email
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background flex items-center justify-center p-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-accent/10 rounded-full blur-xl animate-pulse delay-1000" />
+        <div className="absolute top-3/4 left-1/2 w-20 h-20 bg-secondary/10 rounded-full blur-xl animate-pulse delay-500" />
+      </div>
+
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-card/80 backdrop-blur-sm relative z-10">
+        <CardHeader className="text-center pb-4">
+          <div className="mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+              <Mail className="w-8 h-8 text-primary" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold text-card-foreground mb-2 flex items-center justify-center gap-2">
+            Join Our Community!
+            <Sparkles className="w-6 h-6 text-primary" />
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-lg">
+            Get exclusive updates, tips, and special offers delivered straight to your inbox.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-card-foreground">
+                Email Address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-12 text-base border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-lg font-semibold bg-primary hover:bg-accent transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Subscribing...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Join the list
+                </div>
+              )}
+            </Button>
+          </form>
+
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">
+              By subscribing, you agree to receive marketing emails. Unsubscribe anytime.
+            </p>
+          </div>
+
+          {/* Trust indicators */}
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-primary" />
+              No spam
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-primary" />
+              Unsubscribe anytime
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
